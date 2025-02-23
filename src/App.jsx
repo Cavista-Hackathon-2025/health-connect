@@ -7,7 +7,8 @@ import Signup from "../src/components/Auth/Patients/Signup";
 import Login from "../src/components/Auth/Patients/Login";
 import DoctorSignup from "../src/components/Auth/Doctors/DoctorSignup";
 import DoctorLogin from "../src/components/Auth/Doctors/DoctorLogin";
-import Patient from "../src/components/Dashboard/Patient";
+import DoctorRegistration from "../src/components/form/DoctorRegistration";
+
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
       <Route path="/doctor/login" element={<DoctorLogin />} />
       <Route path="/patient" element={<SymptomsAnalysis />} />
       <Route path="/patient/dashboard" element={<Patient />} />
+      <Route path="/doctor/registration" element={<DoctorRegistration />} />
+
     </Routes>
   );
 }

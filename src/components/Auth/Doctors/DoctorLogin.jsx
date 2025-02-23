@@ -97,7 +97,9 @@ const DoctorLogin = () => {
         });
 
         // Handle successful signup (e.g., redirect to login)
-        // window.location.href = '/patient/dashboard';
+
+        window.location.href = '/doctor/dashboard';
+
       } catch (error) {
         toaster.create({
           title: "Error creating account",
