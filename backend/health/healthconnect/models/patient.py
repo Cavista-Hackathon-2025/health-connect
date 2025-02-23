@@ -7,7 +7,6 @@ from django.conf import settings
 
 class DiagnosisModel(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='diagnosis_model')
-    full_name = models.CharField(max_length=255,null=True,blank=True)
     age = models.CharField(max_length=255,null=True,blank=True)
     gender = models.CharField(max_length=255,null=True,blank=True)
     phone = models.CharField(max_length=255,null=True,blank=True)
@@ -16,7 +15,7 @@ class DiagnosisModel(models.Model):
     allergies = models.TextField()
     current_medication = models.TextField()
     test_result_text= models.TextField(blank=True,null=True)
-    test_result_image = models.FileField(upload_to='doctors/',null=True,blank=True)
+    # test_result_image = models.FileField(upload_to='doctors/',null=True,blank=True)
     
     def __str__(self):
         return self.full_name

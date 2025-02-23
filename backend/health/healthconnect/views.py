@@ -71,7 +71,6 @@ class LoginView(ObtainAuthToken):
 
 class PatientDiagnosisView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]  # To handle file uploads
     serializer_class = DiagnosisSerializer
 
     def get_queryset(self):

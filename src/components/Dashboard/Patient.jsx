@@ -18,108 +18,160 @@ import {
 import React, { useState, useEffect } from "react";
 import { InputGroup } from "../ui/input-group";
 import { IoChatboxOutline, IoSend } from "react-icons/io5";
-import { IoMdClose } from "react-icons/io";
+import { IoMdClose, IoMdHeart } from "react-icons/io";
 import axios from "axios";
 import { TiPlus } from "react-icons/ti";
 import { TbDeviceIpadShare } from "react-icons/tb";
+import { Link } from "react-router-dom"
+
+const API_BASE_URL = 'http://127.0.0.1:8000/healthconnect';
 
 const Patient = () => {
-  const token = localStorage.getItem("token");
+  const [tips, setTips] = useState([]);
+  const [specialists, setSpecialists] = useState([]);
+  const [loading, setLoading] = useState({
+    tips: false,
+    specialists: false,
+    analysis: false
+  });
+  const [error, setError] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { text: "Hi! How can I help you today?", sender: "bot" }
+  ]);
+  const [input, setInput] = useState("");
+  const [shouldRefetch, setShouldRefetch] = useState(false);
+
   const cards = [
     {
       title: "Start New Assessment",
       description: "Get AI-powered advice",
       cta: "New Assessment",
-      url: "/patient/check-symptoms",
+      url: "/patient",
     },
     {
       title: "Medicine Reminders",
       description: "Keep Track of your medication",
       cta: "Add Medicine",
       url: "/patient/reminder",
-    },
+    }
   ];
 
-  const [tips, setTips] = useState([]);
-  const [loading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const fetchTips = async () => {
+    setLoading(prev => ({ ...prev, tips: true }));
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const response = await fetch(`${API_BASE_URL}/patient-ai-generated-result/`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch tips');
+
+      const data = await response.json();
+      setTips(data);
+    } catch (err) {
+      setError('Failed to load health tips');
+      console.error('Error fetching tips:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, tips: false }));
+    }
+  };
+
+  const fetchSpecialists = async () => {
+    setLoading(prev => ({ ...prev, specialists: true }));
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const response = await fetch(`${API_BASE_URL}/doctor-recommendation/`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch specialists');
+
+      const data = await response.json();
+      setSpecialists(data);
+    } catch (err) {
+      console.error('Error fetching specialists:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, specialists: false }));
+    }
+  };
 
   useEffect(() => {
-    const fetchTips = async () => {
-      setIsLoading(true);
-      setError(null);
+    let mounted = true;
 
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No authentication token found");
-        }
-
-        const response = await fetch(
-          "https://fc78-102-221-239-130.ngrok-free.app/healthconnect/patient-ai-generated-result",
-          {
-            headers: {
-              "content-type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        if (response.ok) {
-          const data = await response.json();
-          setTips(data);
-        }
-      } catch (err) {
-        console.error("Error fetching tips:", err);
-        setError({
-          message:
-            err instanceof Error ? err.message : "Failed to load health tips",
-          code: "FETCH_ERROR",
-        });
-      } finally {
-        setIsLoading(false);
+    const fetchInitialData = async () => {
+      if (mounted) {
+        await Promise.all([
+          fetchTips(),
+          fetchSpecialists()
+        ]);
       }
     };
 
-    fetchTips();
-  }, []);
+    fetchInitialData();
 
-  console.log(tips);
+    return () => {
+      mounted = false;
+    };
+  }, [shouldRefetch]); // Only re-run if shouldRefetch changes
 
-  const [chatOpen, setChatOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { text: "Hi! How can I help you today?", sender: "bot" },
-  ]);
-  const [input, setInput] = useState("");
+  const generateAnalysis = async () => {
+    setLoading(prev => ({ ...prev, analysis: true }));
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
 
-  const toggleChat = () => {
-    setChatOpen(!chatOpen);
+      const response = await fetch(`${API_BASE_URL}/generate-diagnosis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to generate analysis');
+
+      // Trigger a refetch of tips after successful analysis
+      setShouldRefetch(prev => !prev);
+    } catch (err) {
+      setError('Failed to generate analysis');
+      console.error('Error generating analysis:', err);
+    } finally {
+      setLoading(prev => ({ ...prev, analysis: false }));
+    }
   };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [...messages, { text: input, sender: "user" }];
+    const newMessages = [...messages, { text: input, sender: 'user' }];
     setMessages(newMessages);
-    setInput("");
+    setInput('');
 
     try {
-      const response = await axios.post("http://localhost:5000/api/chat", {
-        message: input,
+      const response = await fetch('http://localhost:5000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input })
       });
-      setMessages([
-        ...newMessages,
-        { text: response.data.reply, sender: "bot" },
-      ]);
-    } catch (error) {
-      console.error("Chat error:", error);
-      setMessages([
-        ...newMessages,
-        { text: "Sorry, I couldn't process your request.", sender: "bot" },
-      ]);
+
+      if (!response.ok) throw new Error('Failed to send message');
+
+      const data = await response.json();
+      setMessages([...newMessages, { text: data.reply, sender: 'bot' }]);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setMessages([...newMessages, { text: 'Sorry, I couldn\'t process your request.', sender: 'bot' }]);
     }
   };
 
@@ -167,26 +219,150 @@ const Patient = () => {
                   </HStack>
                 </Card.Body>
                 <Card.Footer>
-                  <Button>{card.cta}</Button>
+                  <Link to={card.url}><Button>{card.cta}</Button></Link>
                 </Card.Footer>
               </Box>
             </Card.Root>
           ))}
         </Flex>
-        <Flex>
-          <SimpleGrid columns={2} gap="40px">
-            {tips.map((tip, index) => (
-              <Card.Root size="lg">
-                <Card.Header>
-                  <Heading size="md"> Card - lg</Heading>
-                </Card.Header>
-                <Card.Body color="fg.muted">
-                  This is the card body. Lorem ipsum dolor sit amet, consectetur
-                  adipiscing elit.
-                </Card.Body>
-              </Card.Root>
-            ))}
-          </SimpleGrid>
+        <VStack display={tips.length === 0 ? "flex" : "none"} w="100%" h="50px" align="center">
+          <Button onClick={generateAnalysis} loading={loading.analysis} loadingText="Analysing..." disabled={loading.analysis}>Analyse My Symptoms Result</Button>
+        </VStack>
+        <Flex w="100%" justify="space-between" gap="50px">
+          <VStack display={tips.length === 0 ? "none" : "flex"} align="flex-start" gap="20px">
+            <Heading>Tips</Heading>
+            <SimpleGrid columns={2} gap="40px">
+              {tips.daily_health_tip !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Daily Health Tip</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.daily_health_tip}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.Immune_boosting_tip !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Immune Boosting Tip</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.Immune_boosting_tip}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.food_and_nutrution !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Food and Nutrution</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.food_and_nutrution}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.healthy_lifestyle_habit !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Healthy Lifestyle Habit</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.healthy_lifestyle_habit}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.hydration_Tip !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Hydration Tip</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.hydration_Tip}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.mental_health_tip !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Mental Health Tip</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.mental_health_tip}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.sleep_tip !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Sleep Tip</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.sleep_tip}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+              {tips.stress_management_tip !== "" && tips.map((tip, index) => (
+                <Card.Root key={index} size="md">
+                  <Card.Header>
+                    <Heading size="md"> Stress Management Tip</Heading>
+                  </Card.Header>
+                  <Card.Body color="fg.muted">
+                    {tip.stress_management_tip}
+                  </Card.Body>
+                </Card.Root>
+              ))}
+            </SimpleGrid>
+          </VStack>
+          <VStack align="flex-start" gap="20px">
+            <Heading>Specialist Recommendation</Heading>
+            <VStack align="flex-start">
+              {specialists.map((user, index) => (
+                <Card.Root key={index} maxW="320px" borderWidth="1px" borderRadius="lg" shadow="sm" bg="white">
+                  <Card.Header>
+                    <Flex justify="space-between" align="center">
+                      {/* <Avatar name={user.full_name} src={user.profile_picture} size="lg" /> */}
+                      <Stack spacing={0} ml={4}>
+                        <Heading size="md">{user.full_name}</Heading>
+                        <Text fontSize="sm" color="gray.500">
+                          {user.specialization}
+                        </Text>
+                      </Stack>
+                    </Flex>
+                  </Card.Header>
+
+                  <Card.Body>
+                    <Flex direction="column" align="flex-start" gap={2}>
+                      <Text fontSize="md" color="gray.700">
+                        <strong>Experience:</strong> {user.years_of_experience} years
+                      </Text>
+                      <Text fontSize="md" color="gray.700">
+                        <strong>Consultation Fee:</strong> ${user.consultation_fee}
+                      </Text>
+
+                    </Flex>
+                  </Card.Body>
+
+                  <Card.Footer>
+                    <Flex justify="space-between" align="center" w="100%">
+                      <Button
+                        rightIcon={<IoMdHeart />}
+                        colorScheme="teal"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => alert(`Contacting Dr. ${user.full_name}`)}
+                      >
+                        Book Appointment
+                      </Button>
+                      <Badge colorScheme="green" borderRadius="full" px={3} py={1} fontSize="sm">
+                        {user.gender}
+                      </Badge>
+                    </Flex>
+                  </Card.Footer>
+                </Card.Root>
+              ))}
+            </VStack>
+          </VStack>
         </Flex>
       </VStack>
       <Button
@@ -196,7 +372,7 @@ const Patient = () => {
         bg="#007299"
         color="white"
         rounded="20px"
-        onClick={toggleChat}
+        onClick={() => setChatOpen(!chatOpen)}
       >
         {" "}
         <Icon color="#56e0e0">
@@ -242,7 +418,7 @@ const Patient = () => {
                 </VStack>
               </Flex>
             </Box>
-            <Button onClick={toggleChat}>
+            <Button onClick={() => setChatOpen(!chatOpen)}>
               <Icon>
                 <IoMdClose />
               </Icon>

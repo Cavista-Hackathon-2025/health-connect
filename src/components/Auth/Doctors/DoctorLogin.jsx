@@ -67,7 +67,7 @@ const DoctorLogin = () => {
 
         // Replace with your API endpoint
         const response = await fetch(
-          "https://3e30-102-221-239-130.ngrok-free.app/healthconnect/login/",
+          "http://127.0.0.1:8000/healthconnect/login/",
           {
             method: "POST",
             headers: {

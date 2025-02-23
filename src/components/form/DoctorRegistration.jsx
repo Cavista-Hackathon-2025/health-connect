@@ -101,7 +101,7 @@ const DoctorRegistration = () => {
 
         // Replace with your API endpoint
         const response = await fetch(
-          "https://3e30-102-221-239-130.ngrok-free.app/healthconnect/doctor-details/",
+          "http://127.0.0.1:8000/healthconnect/healthconnect/doctor-details/",
           {
             method: "POST",
             headers: {
@@ -137,7 +137,7 @@ const DoctorRegistration = () => {
         });
 
         // Handle successful signup (e.g., redirect to login)
-        // window.location.href = '/patient/dashboard';
+        window.location.href = '/patient/dashboard';
       } catch (error) {
         toaster.create({
           title: "Error creating account",

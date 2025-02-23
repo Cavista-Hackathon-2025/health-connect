@@ -24,9 +24,7 @@ class DoctorRecommendationsSerializer(serializers.ModelSerializer):
 class DiagnosisSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiagnosisModel
-        fields = ['id','full_name','age','gender','phone','symptoms','medical_history','allergies',
-                  'current_medication','test_result_text',
-                  'test_result_image']
+        fields = ['id','age','gender','phone','symptoms','medical_history','allergies','current_medication','test_result_text']
         read_only_fields = ['is_active', 'id','user'] 
 
 

@@ -45,110 +45,74 @@ const SymptomsAnalysis = () => {
       { label: "Prefer not to say", value: "Prefer not to say" },
     ],
   });
-  // Initialize file upload handler with configuration
-  const fileUpload = useFileUpload({
-    maxFiles: 10,
-    maxFileSize: 5 * 1024 * 1024, // 5MB
-    accept: {
-      "image/*": [".png", ".jpg", ".jpeg"],
-      "application/pdf": [".pdf"],
-    },
-    validate: (file) => {
-      const errors = [];
-      if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
-        errors.push({
-          code: "file-invalid-type",
-          message: "File type must be PNG, JPEG, or PDF",
-        });
-      }
-      return errors;
-    },
-  });
+  // // Initialize file upload handler with configuration
+  // const fileUpload = useFileUpload({
+  //   maxFiles: 10,
+  //   maxFileSize: 5 * 1024 * 1024, // 5MB
+  //   accept: {
+  //     "image/*": [".png", ".jpg", ".jpeg"],
+  //     "application/pdf": [".pdf"],
+  //   },
+  //   validate: (file) => {
+  //     const errors = [];
+  //     if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+  //       errors.push({
+  //         code: "file-invalid-type",
+  //         message: "File type must be PNG, JPEG, or PDF",
+  //       });
+  //     }
+  //     return errors;
+  //   },
+  // });
 
-  const handleFileUpload = async (files) => {
-    const formData = new FormData();
-
-    for (const file of files) {
-      formData.append("files", file);
-    }
-
-    try {
-      const response = await axios.post("/api/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          // You could add a progress state here if needed
-          console.log(`Upload Progress: ${percentCompleted}%`);
-        },
-      });
-
-      return response.data.fileUrls;
-    } catch (error) {
-      throw new Error("File upload failed: " + error.message);
-    }
-  };
 
   const formik = useFormik({
     initialValues: {
       age: "",
       gender: gender || "",
-      phoneNumber: "",
+      phone: "",
       symptoms: "",
-      medications: "",
+      current_medication: "",
+      medical_history: "",
       allergies: "",
-    },
-    validate: (values) => {
-      const errors = {};
-
-      if (!values.age) {
-        errors.age = "Age is required";
-      } else if (isNaN(values.age) || values.age < 0 || values.age > 120) {
-        errors.age = "Please enter a valid age between 0 and 120";
-      }
-
-      if (!values.gender) {
-        errors.gender = "Gender is required";
-      }
-
-      if (!values.phoneNumber) {
-        errors.phoneNumber = "Phone number is required";
-      } else if (!/^\+?[\d\s-]{10,}$/.test(values.phoneNumber)) {
-        errors.phoneNumber = "Please enter a valid phone number";
-      }
-
-      if (!values.symptoms) {
-        errors.symptoms = "Please describe your symptoms";
-      } else if (values.symptoms.length < 10) {
-        errors.symptoms = "Please provide more detail about your symptoms";
-      }
-
-      return errors;
+      test_result_text: ""
     },
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        // Handle file uploads first if there are any files
-        let fileUrls = [];
-        if (fileUpload.acceptedFiles.length > 0) {
-          fileUrls = await handleFileUpload(fileUpload.acceptedFiles);
-        }
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://127.0.0.1:8000/healthconnect/patient-diagnosis/", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }, body: JSON.stringify({
+            age: values.age,
+            gender: "Male",
+            phone: values.phone,
+            symptoms: values.symptoms,
+            current_medication: values.current_medication,
+            medical_history: values.medical_history,
+            allergies: values.allergies,
+            test_result_text: values.test_result_text
+          }),
+        });
 
-        // Create the final data object to be sent to the database
-        const symptomsData = {
-          ...values,
-          testResults: fileUrls,
-          uploadTimestamp: new Date().toISOString(),
-          status: "pending", // Initial status for the symptoms analysis
-        };
+        const data = [{
+          age: values.age,
+          gender: "Male",
+          phone: values.phone,
+          symptoms: values.symptoms,
+          current_medication: values.current_medication,
+          medical_history: values.medical_history,
+          allergies: values.allergies,
+          test_result_text: values.test_result_text
+        }]
 
-        // Submit to your database
-        const response = await axios.post(
-          "/api/symptoms-analysis",
-          symptomsData
-        );
+        console.log(data)
+
+
+        window.location.href = "/patient/dashboard";
+
 
         toaster.create({
           title: "Assessment Submitted",
@@ -158,8 +122,6 @@ const SymptomsAnalysis = () => {
           isClosable: true,
         });
 
-        // Clear the file upload state after successful submission
-        fileUpload.reset();
       } catch (error) {
         toaster.create({
           title: "Submission Failed",
@@ -210,7 +172,7 @@ const SymptomsAnalysis = () => {
                       bg="#f4feff"
                       type="number"
                       name="age"
-                      value={formik.age}
+                      value={formik.values.age}
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                       placeholder="Enter Age"
@@ -247,13 +209,13 @@ const SymptomsAnalysis = () => {
                     variant="solid"
                     bg="#f4feff"
                     type="tel"
-                    name="phoneNumber"
-                    value={formik.phoneNumber}
+                    name="phone"
+                    value={formik.values.phone}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="Phone Number"
                   />
-                  <Field.ErrorText>{formik.errors.phoneNumber}</Field.ErrorText>
+                  <Field.ErrorText>{formik.errors.phone}</Field.ErrorText>
                 </Field.Root>
 
                 <Field.Root>
@@ -262,7 +224,7 @@ const SymptomsAnalysis = () => {
                     variant="solid"
                     bg="#f4feff"
                     name="symptoms"
-                    value={formik.symptoms}
+                    value={formik.values.symptoms}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="Describe your symptoms in details..."
@@ -275,8 +237,8 @@ const SymptomsAnalysis = () => {
                   <Textarea
                     variant="solid"
                     bg="#f4feff"
-                    name="medications"
-                    value={formik.medications}
+                    name="current_medication"
+                    value={formik.values.current_medication}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="List any medications you're currently taking..."
@@ -289,6 +251,7 @@ const SymptomsAnalysis = () => {
                     variant="solid"
                     bg="#f4feff"
                     name="allergies"
+                    value={formik.values.allergies}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     placeholder="List any allergies you have..."
@@ -296,8 +259,35 @@ const SymptomsAnalysis = () => {
                 </Field.Root>
 
                 <Field.Root>
+                  <Field.Label>Medical History</Field.Label>
+                  <Textarea
+                    variant="solid"
+                    bg="#f4feff"
+                    name="medical_history"
+                    value={formik.values.medical_history}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="List any allergies you have..."
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label>Test Result Text</Field.Label>
+                  <Textarea
+                    variant="solid"
+                    bg="#f4feff"
+                    name="test_result_text"
+                    value={formik.values.test_result_text}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    placeholder="List any allergies you have..."
+                  />
+                </Field.Root>
+
+
+
+                {/* <Field.Root disabled>
                   <Field.Label>Upload Test Results</Field.Label>
-                  <FileUploadRootProvider value={fileUpload}>
+                  <FileUploadRootProvider>
                     <Stack align="flex-start" width="100%">
                       <FileUploadHiddenInput />
                       <FileUploadRoot
@@ -311,18 +301,9 @@ const SymptomsAnalysis = () => {
                         />
                         <FileUploadList />
                       </FileUploadRoot>
-
-                      {fileUpload.rejectedFiles.length > 0 && (
-                        <Code colorPalette="red">
-                          Rejected files:{" "}
-                          {fileUpload.rejectedFiles
-                            .map((e) => e.file.name)
-                            .join(", ")}
-                        </Code>
-                      )}
                     </Stack>
                   </FileUploadRootProvider>
-                </Field.Root>
+                </Field.Root> */}
               </VStack>
 
               <Button
@@ -332,10 +313,10 @@ const SymptomsAnalysis = () => {
                 color="white"
                 size="sm"
                 type="submit"
-                isLoading={formik.isSubmitting}
-                isDisabled={!formik.isValid || formik.isSubmitting}
+                loading={formik.isSubmitting}
+                disabled={!formik.isValid || formik.isSubmitting}
               >
-                Get AI Assessment
+                Submit
               </Button>
             </VStack>
           </form>
