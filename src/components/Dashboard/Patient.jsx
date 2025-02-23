@@ -13,16 +13,18 @@ import {
   Icon,
   Input,
   Stack,
+  SimpleGrid,
 } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { InputGroup } from "../ui/input-group";
 import { IoChatboxOutline, IoSend } from "react-icons/io5";
 import { IoMdClose } from "react-icons/io";
 import axios from "axios";
+import { TiPlus } from "react-icons/ti";
+import { TbDeviceIpadShare } from "react-icons/tb";
 
 const Patient = () => {
-  const token = localStorage.getItem('token')
-  console.log(`user token ${token}`)
+  const token = localStorage.getItem("token");
   const cards = [
     {
       title: "Start New Assessment",
@@ -38,6 +40,55 @@ const Patient = () => {
     },
   ];
 
+  const [tips, setTips] = useState([]);
+  const [loading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTips = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(
+          "https://fc78-102-221-239-130.ngrok-free.app/healthconnect/patient-ai-generated-result",
+          {
+            headers: {
+              "content-type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        if (response.ok) {
+          const data = await response.json();
+          setTips(data);
+        }
+      } catch (err) {
+        console.error("Error fetching tips:", err);
+        setError({
+          message:
+            err instanceof Error ? err.message : "Failed to load health tips",
+          code: "FETCH_ERROR",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTips();
+  }, []);
+
+  console.log(tips);
+
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([
     { text: "Hi! How can I help you today?", sender: "bot" },
@@ -48,7 +99,7 @@ const Patient = () => {
     setChatOpen(!chatOpen);
   };
 
-  const sendMessage = async () => {``
+  const sendMessage = async () => {
     if (!input.trim()) return;
 
     const newMessages = [...messages, { text: input, sender: "user" }];
@@ -122,6 +173,21 @@ const Patient = () => {
             </Card.Root>
           ))}
         </Flex>
+        <Flex>
+          <SimpleGrid columns={2} gap="40px">
+            {tips.map((tip, index) => (
+              <Card.Root size="lg">
+                <Card.Header>
+                  <Heading size="md"> Card - lg</Heading>
+                </Card.Header>
+                <Card.Body color="fg.muted">
+                  This is the card body. Lorem ipsum dolor sit amet, consectetur
+                  adipiscing elit.
+                </Card.Body>
+              </Card.Root>
+            ))}
+          </SimpleGrid>
+        </Flex>
       </VStack>
       <Button
         position="fixed"
@@ -162,10 +228,7 @@ const Patient = () => {
             <Box w="100%" py="10px">
               <Flex justify="flex-start" align="flex-start" gap="10px">
                 <Avatar.Root>
-                  <Avatar.Fallback
-                    name="
-                  Alisha AI Assistant"
-                  />
+                  <Avatar.Fallback name="Alisha AI Assistant" />
                   <Avatar.Image
                     bg="white"
                     src="https://freesvg.org/img/1538298822.png"
@@ -194,6 +257,7 @@ const Patient = () => {
           >
             {messages.map((msg, index) => (
               <Stack
+                key={index}
                 w="100%"
                 flexDirection={msg.sender === "user" ? "row-reverse" : "row"}
                 justify={msg.sender === "user" ? "flex-end" : "flex-start"}
@@ -218,9 +282,11 @@ const Patient = () => {
                   rounded="8px"
                   bg={msg.sender === "user" ? "#007299" : "gray.100"}
                   alignSelf={msg.sender === "user" ? "flex-end" : "flex-start"}
-                  key={index}
                 >
-                  <Text color={msg.sender === "user" ? "white" : "black"} fontSize="14px">
+                  <Text
+                    color={msg.sender === "user" ? "white" : "black"}
+                    fontSize="14px"
+                  >
                     {msg.text}
                   </Text>
                 </Box>

@@ -67,7 +67,7 @@ const Login = () => {
 
         // Replace with your API endpoint
         const response = await fetch(
-          "https://3e30-102-221-239-130.ngrok-free.app/healthconnect/login/",
+          "https://fc78-102-221-239-130.ngrok-free.app/healthconnect/login/",
           {
             method: "POST",
             headers: {
@@ -82,8 +82,6 @@ const Login = () => {
         if (response.ok) {
           const { token } = await response.json();
           const setToken = localStorage.setItem("token", token);
-
-          console;
         }
         if (!response.ok) {
           throw new Error("Signup failed");
@@ -97,7 +95,7 @@ const Login = () => {
         });
 
         // Handle successful signup (e.g., redirect to login)
-        // window.location.href = '/patient/dashboard';
+        window.location.href = "/patient/dashboard";
       } catch (error) {
         toaster.create({
           title: "Error creating account",
