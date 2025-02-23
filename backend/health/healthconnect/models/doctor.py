@@ -12,11 +12,8 @@ class DoctorsModel(models.Model):
     gender = models.CharField(max_length=255,null=True,blank=True)
     specialization = models.CharField(max_length=255,null=True,blank=True)
     years_of_experience = models.CharField(max_length=255,null=True,blank=True)
-    qualifications = models.CharField(max_length=255,null=True,blank=True)
     consultation_fee = models.CharField(max_length=255,null=True,blank=True)
-    availability = models.CharField(max_length=255,null=True,blank=True)
-    profile_picture = models.FileField(upload_to='doctors/',null=True,blank=True)
-    short_Bio = models.TextField()
+    short_Bio = models.TextField(null=True,blank=True)
     
     
     def __str__(self):

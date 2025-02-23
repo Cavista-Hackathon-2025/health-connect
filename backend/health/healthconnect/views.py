@@ -12,10 +12,10 @@ from rest_framework.parsers import MultiPartParser, FormParser,JSONParser
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .models.account import HealthUser
 from .models.doctor import DoctorsModel
-from .models.patient import PatientGenarateResult
+from .models.patient import PatientGenarateResult,DoctorRecommendation
 from .models.patient import DiagnosisModel
 from rest_framework.views import APIView
-from .llm_ai.utils import generate_result_for_patient_diagnosis
+from .llm_ai.utils import generate_result_for_patient_diagnosis,generate_recommended_doctor_for_patient
 class CreateAccount(viewsets.ModelViewSet):
     """
     endpoint to create account for employer or applicant
@@ -84,8 +84,7 @@ class PatientDiagnosisView(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 class DoctorDetailView(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser, JSONParser]  # To handle 
+    permission_classes = [IsAuthenticated] 
     serializer_class = DoctorModelSerializer
 
     def get_queryset(self):
@@ -116,6 +115,22 @@ class PatientGeneratedResultView(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
         
         
+
+class DoctorRecommendationView(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+ 
+    serializer_class = DoctorRecommendationsSerializer
+
+    def get_queryset(self):
+        return DoctorRecommendation.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+        
+        
         
         
         
@@ -132,8 +147,25 @@ class generate_diagnosis(APIView):
            avaliable_professional_doctors = DoctorsModel.objects.all()
            print("doctor",avaliable_professional_doctors)
            
+           
             # get patient_diagnosis_result
            patient_diagnosis_result = get_object_or_404(DiagnosisModel,user=user)
+           
+           # generate recommended doctors
+           recommended_doctors = generate_recommended_doctor_for_patient(patient_diagnosis_result)
+           print(" recommended_doctors:", recommended_doctors.doctors)
+           for doctors in recommended_doctors.doctors:
+               
+               obj,create = DoctorRecommendation.objects.update_or_create(
+                user=user,
+                 full_name=doctors.full_name,
+                 phone=doctors.phone,
+                 gender=doctors.gender,
+                 specialization=doctors.specialization,
+                 years_of_experience=doctors.years_of_experience,
+                 consultation_fee=doctors.consultation_fee,
+                   
+               )
            
            ## ai generate health tips
            ai_diagnosis_result = generate_result_for_patient_diagnosis(patient_diagnosis_result)

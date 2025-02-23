@@ -37,12 +37,11 @@ class PatientGenarateResult(models.Model):
     
     
 class DoctorRecommendation(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='doctor_recommendation')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='doctor_recommendation')
     full_name = models.CharField(max_length=255,null=True,blank=True)
     phone = models.CharField(max_length=255,null=True,blank=True)
     gender = models.CharField(max_length=255,null=True,blank=True)
     specialization = models.CharField(max_length=255,null=True,blank=True)
     years_of_experience = models.CharField(max_length=255,null=True,blank=True)
-    qualifications = models.CharField(max_length=255,null=True,blank=True)
     consultation_fee = models.CharField(max_length=255,null=True,blank=True)
-    availability = models.CharField(max_length=255,null=True,blank=True)
+   

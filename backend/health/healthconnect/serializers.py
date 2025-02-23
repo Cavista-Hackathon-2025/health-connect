@@ -1,6 +1,6 @@
 from .models.account import HealthUser
 from .models.doctor import DoctorsModel
-from .models.patient import DiagnosisModel,PatientGenarateResult
+from .models.patient import DiagnosisModel,PatientGenarateResult,DoctorRecommendation
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 from django.shortcuts import get_object_or_404
@@ -12,6 +12,13 @@ class PatientGenarateResultSerializer(serializers.ModelSerializer):
         model = PatientGenarateResult
         fields = '__all__'
         read_only_fields = ['is_active', 'id','user']
+        
+        
+class DoctorRecommendationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorRecommendation
+        fields = '__all__'
+        read_only_fields = ['id','user']
     
 
 class DiagnosisSerializer(serializers.ModelSerializer):
@@ -29,8 +36,7 @@ class DoctorModelSerializer(serializers.ModelSerializer):
         fields = ['id','full_name','phone','gender',
                   'specialization',
                   'years_of_experience',
-                  'qualifications','availability',
-                  'consultation_fee','profile_picture','short_Bio']
+                  'consultation_fee','short_Bio']
         
         read_only_fields = ['is_active', 'id','user'] 
         
