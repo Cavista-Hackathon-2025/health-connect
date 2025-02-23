@@ -10,11 +10,11 @@ import {
   Text,
   Icon,
 } from "@chakra-ui/react";
-import Hero from "../../assets/patient.svg";
+import Hero from "../../../assets/patient2.jpg";
 import { IoIosArrowForward } from "react-icons/io";
 import { useFormik } from "formik";
-import { toaster } from "../../components/ui/toaster";
-import { PasswordInput } from "../../components/ui/password-input";
+import { toaster } from "../../ui/toaster";
+import { PasswordInput } from "../../ui/password-input";
 import { BsWindowSidebar } from "react-icons/bs";
 import { Link } from "react-router-dom";
 
@@ -83,7 +83,7 @@ const Login = () => {
           const { token } = await response.json();
           const setToken = localStorage.setItem("token", token);
 
-          console
+          console;
         }
         if (!response.ok) {
           throw new Error("Signup failed");

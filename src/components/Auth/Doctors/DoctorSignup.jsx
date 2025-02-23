@@ -10,14 +10,15 @@ import {
   Text,
   Icon,
 } from "@chakra-ui/react";
-import Hero from "../../assets/patient.svg";
+import Hero from "../../../assets/doctor.svg";
 import { IoIosArrowForward } from "react-icons/io";
 import { useFormik } from "formik";
-import { toaster } from "../../components/ui/toaster";
-import { PasswordInput } from "../../components/ui/password-input";
+import { toaster } from "../../ui/toaster";
+import { PasswordInput } from "../../ui/password-input";
 import { BsWindowSidebar } from "react-icons/bs";
+import {Link} from "react-router-dom"
 
-const Signup = () => {
+const DoctorSignup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -108,7 +109,7 @@ const Signup = () => {
         });
 
         // Handle successful signup
-        window.location.href = "/patient/login";
+        window.location.href = "/doctor/login";
       } catch (error) {
         toaster.create({
           title: "Error creating account",
@@ -148,9 +149,11 @@ const Signup = () => {
             <Heading fontSize="24px">Create Account</Heading>
             <Text>
               Already have an account?{" "}
-              <Text as="span" color="#007299" cursor="pointer">
-                Login
-              </Text>
+              <Link to="/doctor/login">
+                <Text as="span" color="#007299" cursor="pointer">
+                  Login
+                </Text>
+              </Link>
             </Text>
           </VStack>
           <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
@@ -260,4 +263,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default DoctorSignup;
