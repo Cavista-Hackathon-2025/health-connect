@@ -83,7 +83,7 @@ const Signup = () => {
 
         // Replace with your API endpoint
         const response = await fetch(
-          "https://3e30-102-221-239-130.ngrok-free.app/healthconnect/create-account/",
+          "https://fc78-102-221-239-130.ngrok-free.app/healthconnect/create-account/",
           {
             method: "POST",
             headers: {
