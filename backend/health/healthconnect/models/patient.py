@@ -25,7 +25,6 @@ class DiagnosisModel(models.Model):
 
 class PatientGenarateResult(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='patientgenarateResult')
-    diagnosis = models.ForeignKey(DiagnosisModel,on_delete=models.CASCADE)
     daily_health_tip = models.TextField()
     hydration_Tip = models.TextField()
     mental_health_tip = models.TextField()
@@ -34,3 +33,15 @@ class PatientGenarateResult(models.Model):
     healthy_lifestyle_habit = models.TextField()
     Immune_boosting_tip = models.TextField()
     food_and_nutrution = models.TextField()
+    
+    
+    
+class DoctorRecommendation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='doctor_recommendation')
+    full_name = models.CharField(max_length=255,null=True,blank=True)
+    phone = models.CharField(max_length=255,null=True,blank=True)
+    gender = models.CharField(max_length=255,null=True,blank=True)
+    specialization = models.CharField(max_length=255,null=True,blank=True)
+    years_of_experience = models.CharField(max_length=255,null=True,blank=True)
+    consultation_fee = models.CharField(max_length=255,null=True,blank=True)
+   

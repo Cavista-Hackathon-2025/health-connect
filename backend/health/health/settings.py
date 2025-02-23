@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-t2)-zs7c%n)(^eef&dh+r2g1)%vhk)!#c5p!)znd%92&jx-m39
 
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['*','3e30-102-221-239-130.ngrok-free.app']
+ALLOWED_HOSTS = ['*','fc78-102-221-239-130.ngrok-free.app']
 
 
 # Application definition
@@ -164,16 +164,19 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1",
-    "https://3e30-102-221-239-130.ngrok-free.app"
+    "http://localhost:5173",
+    "https://fc78-102-221-239-130.ngrok-free.app"
    
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1",
-    "https://3e30-102-221-239-130.ngrok-free.app"
+    "http://localhost:5173",
+    "https://fc78-102-221-239-130.ngrok-free.app"
    
     ]
+CORS_ALLOW_ALL_ORIGINS=True
 
 
 REST_FRAMEWORK = {

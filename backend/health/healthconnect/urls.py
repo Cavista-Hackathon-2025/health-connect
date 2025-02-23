@@ -16,6 +16,8 @@ router.register(r'create-account', CreateAccount,basename='create-account')
 router.register(r'doctor-details', DoctorDetailView,basename='doctor-details')
 
 router.register(r'patient-ai-generated-result', PatientGeneratedResultView,basename='patient-ai-generated-result')
+router.register(r'doctor-recommendation',DoctorRecommendationView,basename='doctor-recommendation')
+
 
 router.register(r'patient-diagnosis', PatientDiagnosisView,basename='patient-diagnosis')
 
