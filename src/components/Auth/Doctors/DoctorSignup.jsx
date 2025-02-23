@@ -109,7 +109,11 @@ const DoctorSignup = () => {
         });
 
         // Handle successful signup
+
         window.location.href = "/doctor/login";
+
+        
+
       } catch (error) {
         toaster.create({
           title: "Error creating account",
