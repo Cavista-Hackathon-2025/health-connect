@@ -21,6 +21,8 @@ import { IoMdClose } from "react-icons/io";
 import axios from "axios";
 
 const Patient = () => {
+  const token = localStorage.getItem('token')
+  console.log(`user token ${token}`)
   const cards = [
     {
       title: "Start New Assessment",
@@ -46,7 +48,7 @@ const Patient = () => {
     setChatOpen(!chatOpen);
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async () => {``
     if (!input.trim()) return;
 
     const newMessages = [...messages, { text: input, sender: "user" }];
